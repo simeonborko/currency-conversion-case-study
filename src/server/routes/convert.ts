@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { getCurrencies, convertCurrency } from "../services/exchangeRates";
+import { getStatsStore } from "../services/statsStore";
 
 const router = Router();
 
@@ -30,6 +31,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
       return res.status(400).json({ error: `Unknown currency: ${toUpper}` });
 
     const result = await convertCurrency(fromUpper, toUpper, amount);
+    getStatsStore().recordConversion(toUpper);
     res.json(result);
   } catch (err) {
     next(err);

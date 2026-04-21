@@ -1,6 +1,8 @@
 import request from "supertest";
 import { createApp } from "../app";
 import * as exchangeRates from "../services/exchangeRates";
+import { InMemoryStatsStore } from "../services/InMemoryStatsStore";
+import { setStatsStore } from "../services/statsStore";
 
 jest.mock("../services/exchangeRates");
 
@@ -15,6 +17,7 @@ describe("GET /api/convert", () => {
     (exchangeRates.getCurrencies as jest.Mock).mockResolvedValue(
       mockCurrencies
     );
+    setStatsStore(new InMemoryStatsStore());
   });
 
   it("returns 200 with ConversionResult", async () => {
@@ -114,5 +117,27 @@ describe("GET /api/convert", () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: "API error" });
+  });
+
+  it("records conversion in stats store", async () => {
+    const store = new InMemoryStatsStore();
+    setStatsStore(store);
+
+    (exchangeRates.convertCurrency as jest.Mock).mockResolvedValueOnce({
+      from: "USD",
+      to: "EUR",
+      amount: 100,
+      result: 92,
+      rate: 0.92,
+    });
+
+    const response = await request(createApp()).get(
+      "/api/convert?from=USD&to=EUR&amount=100"
+    );
+
+    expect(response.status).toBe(200);
+    const stats = store.getStats();
+    expect(stats.totalConversions).toBe(1);
+    expect(stats.mostFrequentTarget).toBe("EUR");
   });
 });
