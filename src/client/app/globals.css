@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --color-purple-brand: #6B21A8;
+  --color-purple-brand-dark: #5B21B6;
+  --color-bg-page: #e5e7eb;
+}
+
+html,
+body {
+  background-color: var(--color-bg-page);
+  min-height: 100vh;
+}

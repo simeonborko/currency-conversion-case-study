@@ -1,21 +1,32 @@
 # Currency Conversion — Developer Guide
 
 ## Project Overview
-Full-stack currency conversion app. **Backend is complete; React frontend is next (not yet started).**
+Full-stack currency conversion app. **Backend complete; Next.js frontend complete.**
 
-Single-package TypeScript monorepo. Server lives in `src/server/`, future React client in `src/client/` (already excluded from server tsconfig).
+Monorepo structure: server in `src/server/`, frontend in `src/client/` (each has its own `package.json`, `tsconfig.json`). Root server tsconfig excludes `src/client/` to avoid conflicts.
 
-## Running the Server
+## Running the App
 
+### Backend Server
 ```bash
-# Prerequisites: Node 20+ required (nvm use 20 if needed)
+# Prerequisites: Node 20+ required
 cp .env.example .env   # add your Open Exchange Rates APP_ID
 npm install
-npm run dev            # tsx watch — live reload
+npm run dev            # tsx watch — live reload on port 3001
 npm run build          # tsc → dist/
 npm start              # node dist/server/index.js
 npm test               # jest
 ```
+
+### Frontend (Next.js 15)
+```bash
+npm run client:install   # install frontend dependencies
+npm run client:dev       # next dev — live reload on port 3000
+npm run client:build     # next build
+npm run client:start     # next start (production server)
+```
+
+**Both together** (requires two terminals or use `concurrently` for parallel execution).
 
 ## API Endpoints
 
@@ -70,8 +81,40 @@ src/server/
 
 **Route integration tests** (supertest): mock entire service modules with `jest.mock(...)` for routes that depend on external I/O (`exchangeRates`). Inject fresh `InMemoryStatsStore` instances via `setStatsStore()` in `beforeEach` for stats isolation.
 
+## Frontend Architecture (`src/client/`)
+
+**Stack:** Next.js 15 + React 19 + TypeScript + Tailwind CSS 4 (CSS-first, no config file)
+
+```
+src/client/
+├── app/
+│   ├── layout.tsx          Root layout (imports globals.css)
+│   ├── page.tsx            Main page — form + result display
+│   └── globals.css         Tailwind @import + theme variables
+├── components/
+│   ├── ConverterForm.tsx   Purple card with amount + From/To selects
+│   └── ResultCard.tsx      Displays converted amount + calculation count
+├── lib/
+│   ├── api.ts              Typed fetch wrappers for 3 backend endpoints
+│   └── types.ts            DTOs matching server types
+├── next.config.ts          Rewrites /api/* → http://localhost:3001/api/*
+├── postcss.config.js       Tailwind 4 PostCSS plugin
+├── tsconfig.json           Next.js strict TypeScript config
+└── package.json            React 19, Next.js 15, Tailwind 4
+```
+
+**Key features:**
+- Responsive design: 3-column form (desktop), stacked fields (mobile)
+- Purple theme (`#6B21A8` card, `#5B21B6` button)
+- API proxy via Next.js rewrites — all `/api/*` requests forward to backend
+- Result card shows formatted amount + live stats (total conversions count)
+- Error handling with inline error display
+- Tailwind 4 CSS-first configuration (no `tailwind.config.js`)
+
+**Running:** `npm run client:dev` starts on port 3000. Backend must run on port 3001 for proxy to work.
+
 ## Future Work
 
 - **PostgreSQL stats store:** implement `IStatsStore` backed by pg; register it in `index.ts` startup. No route changes needed.
-- **React frontend:** scaffold under `src/client/` with its own `tsconfig.json`; server tsconfig already excludes that path.
 - **Caching TTL tuning:** currency names change rarely — consider longer TTL (e.g. 24h) for the currencies cache vs. rates.
+- **Frontend deployment:** Next.js can be deployed standalone; rewrite target in `next.config.ts` should point to production backend URL via `NEXT_PUBLIC_API_URL` env var.
