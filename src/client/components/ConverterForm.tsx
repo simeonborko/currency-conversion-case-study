@@ -85,7 +85,7 @@ export default function ConverterForm({
             >
               {currencies.map((currency) => (
                 <option key={currency.symbol} value={currency.symbol}>
-                  {currency.symbol}
+                  {currency.symbol} - {currency.name}
                 </option>
               ))}
             </select>
@@ -104,7 +104,7 @@ export default function ConverterForm({
             >
               {currencies.map((currency) => (
                 <option key={currency.symbol} value={currency.symbol}>
-                  {currency.symbol}
+                  {currency.symbol} - {currency.name}
                 </option>
               ))}
             </select>

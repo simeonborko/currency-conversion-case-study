@@ -26,6 +26,14 @@ export default function ResultCard({ result, stats }: ResultCardProps) {
 
       <p className="text-sm text-gray-500 mb-2">Number of calculations made</p>
       <p className="text-3xl font-bold text-gray-900">{stats?.totalConversions ?? 0}</p>
+
+      {stats?.mostFrequentTarget && (
+        <>
+          <hr className="my-4 border-gray-200" />
+          <p className="text-sm text-gray-500 mb-2">Most frequent target currency</p>
+          <p className="text-3xl font-bold text-gray-900">{stats.mostFrequentTarget}</p>
+        </>
+      )}
     </div>
   );
 }

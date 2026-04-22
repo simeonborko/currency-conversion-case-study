@@ -40,7 +40,13 @@ export default function Page() {
           </div>
         )}
 
-        {conversionResult && <ResultCard result={conversionResult} stats={stats} />}
+        {conversionResult && (
+          <div className="flex justify-center">
+            <div className="w-full max-w-xs">
+              <ResultCard result={conversionResult} stats={stats} />
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
